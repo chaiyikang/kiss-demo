@@ -30,21 +30,23 @@ export default function AppNavbar() {
 	];
 
 	return (
-		<Navbar>
+		<Navbar className="bg-slate-300 h-[6rem]">
 			{/* logo */}
 			<NavbarBrand>
-				<Image
-					height={80}
-					width={189}
-					alt="Kitten Sanctuary Logo"
-					src="/LOGOlandscape.png"
-				/>
+				<Link href="/">
+					<Image
+						height={80}
+						width={189}
+						alt="Kitten Sanctuary Logo"
+						src="/LOGOlandscape.png"
+					/>
+				</Link>
 			</NavbarBrand>
 
 			{/* nav links */}
 			<NavbarContent className="hidden sm:flex gap-4" justify="center">
 				{links.map((link) => (
-					<NavbarItem>
+					<NavbarItem key={link.name}>
 						<Link
 							color={pathname === link.href ? "" : "foreground"}
 							href={link.href}
