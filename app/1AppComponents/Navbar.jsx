@@ -15,9 +15,12 @@ import { Button } from "@nextui-org/button";
 import React from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function AppNavbar() {
 	const pathname = usePathname();
+	console.log(pathname.split("/").slice(0, 2).join("/"));
+
 	const links = [
 		{ name: "Home", href: "/" },
 		{ name: "About Us", href: "/about-us" },
@@ -48,7 +51,11 @@ export default function AppNavbar() {
 				{links.map((link) => (
 					<NavbarItem key={link.name}>
 						<Link
-							color={pathname === link.href ? "" : "foreground"}
+							color={
+								pathname.split("/").slice(0, 2).join("/") === link.href
+									? ""
+									: "foreground"
+							}
 							href={link.href}
 							aria-current={pathname === link.href ? "page" : "false"}
 						>

@@ -27,3 +27,15 @@ export async function getCats(query) {
 		throw new Error("Error getting cats");
 	}
 }
+
+export async function getCatById(id) {
+	try {
+		mongooseConnect();
+		return await Cat.find({ _id: id });
+	} catch (error) {
+		console.log("Error getting cat");
+		throw new Error("Error getting cat");
+	}
+}
+
+
