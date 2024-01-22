@@ -1,12 +1,13 @@
 "use client";
 import { Input } from "@nextui-org/input";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 export default function Searchbar() {
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
 	const { replace } = useRouter();
 
-	function handleInput(e) {
+	const handleInput = useDebouncedCallback((e) => {
 		const input = e.target.value;
 		const params = new URLSearchParams(searchParams);
 		if (input) {
@@ -15,7 +16,7 @@ export default function Searchbar() {
 			params.delete("catQuery");
 		}
 		replace(`${pathname}?${params.toString()}`);
-	}
+	}, 300);
 
 	return (
 		<div>

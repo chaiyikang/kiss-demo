@@ -6,7 +6,6 @@ import Link from "next/link";
 
 export default async function Page({ searchParams }) {
 	const cats = await getCats(searchParams?.catQuery);
-	console.log(searchParams);
 	return (
 		<>
 			<div className="flex justify-between">

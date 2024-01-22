@@ -19,7 +19,6 @@ import { useRouter } from "next/router";
 
 export default function AppNavbar() {
 	const pathname = usePathname();
-	console.log(pathname.split("/").slice(0, 2).join("/"));
 
 	const links = [
 		{ name: "Home", href: "/" },

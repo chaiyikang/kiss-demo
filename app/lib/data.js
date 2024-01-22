@@ -13,6 +13,7 @@ export async function getUsers() {
 }
 
 export async function getCats(query) {
+	// throw new Error();
 	try {
 		mongooseConnect();
 		// await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -37,5 +38,3 @@ export async function getCatById(id) {
 		throw new Error("Error getting cat");
 	}
 }
-
-

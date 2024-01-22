@@ -3,10 +3,13 @@ import Link from "next/link";
 import { Button } from "@nextui-org/button";
 import { getCatById } from "../../lib/data";
 import DeleteButton from "./DeleteButton";
+import { notFound } from "next/navigation";
 //
 export default async function Page({ params }) {
 	const id = params.id;
 	const [cat] = await getCatById(id);
+
+	if (!cat) notFound();
 
 	return (
 		<div>
