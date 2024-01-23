@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import { Providers } from "./providers";
-import AppNavbar from "./1AppComponents/Navbar";
+import AppNavbarSessionProvider from "./1AppComponents/AppNavbarSessionProvider";
 import { nunitoSans } from "./fonts";
 
 export const metadata = {
@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
 		<html lang="en" className="light">
 			<body className={`${nunitoSans.className} antialiased`}>
 				<Providers>
-					<AppNavbar />
+					<AppNavbarSessionProvider />
 					{children}
 				</Providers>
 			</body>

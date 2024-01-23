@@ -1,12 +1,15 @@
 "use server";
 
 import { z } from "zod";
+import bcrypt from "bcrypt";
 import { mongooseConnect } from "./mongooseConnect";
-import { Cat } from "./models";
+import { Cat, User } from "./models";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { signIn, signOut } from "../../auth";
+import { AuthError } from "next-auth";
 
-const FormSchema = z.object({
+const CatFormSchema = z.object({
 	name: z
 		.string({
 			invalid_type_error: "Name must be text.",
@@ -32,8 +35,98 @@ const FormSchema = z.object({
 		.min(1, { message: "Please enter the link" }),
 });
 
+const UserFormSchema = z.object({
+	email: z
+		.string({
+			invalid_type_error: "Email must be text.",
+		})
+		.email({ message: "Invalid email address" }),
+	password: z
+		.string({
+			invalid_type_error: "Password must be text.",
+		})
+		.min(6, { message: "Password must be at least 6 characters long." }),
+	passwordAgain: z
+		.string({
+			invalid_type_error: "Password must be text.",
+		})
+		.min(6, { message: "Password must be at least 6 characters long." }),
+});
+
+export async function signOutAction() {
+	try {
+		await signOut();
+	} catch (error) {
+		if (error.message.includes("NEXT_REDIRECT")) {
+			console.log("redirecting...");
+			throw error;
+		} else console.error(error);
+	}
+	console.log("logged out");
+}
+
+export async function authenticate(prevState, formData) {
+	try {
+		await signIn("credentials", formData);
+	} catch (error) {
+		// for auth errors, return message instead of throwing error
+		if (error instanceof AuthError) {
+			switch (error.type) {
+				case "CredentialsSignin":
+					return "Invalid credentials.";
+				default:
+					return "Something went wrong.";
+			}
+		}
+		throw error;
+	}
+}
+
+export async function createUser(prevState, formData) {
+	const validatedFields = UserFormSchema.safeParse({
+		email: formData.get("email"),
+		password: formData.get("password"),
+		passwordAgain: formData.get("passwordAgain"),
+	});
+
+	if (!validatedFields.success) {
+		return {
+			errors: validatedFields.error.flatten().fieldErrors,
+			message: "Missing fields. Failed to create user.",
+		};
+	}
+	const { email, password, passwordAgain } = validatedFields.data;
+
+	const user = await User.findOne({ email });
+	if (user)
+		return {
+			message: "A user with that email already exists.",
+		};
+
+	if (!(password === passwordAgain)) {
+		return {
+			message: "Passwords do not match.",
+		};
+	}
+
+	const salt = await bcrypt.genSalt(10);
+	const hashedPassword = await bcrypt.hash(password, salt);
+
+	try {
+		mongooseConnect();
+		const newUser = new User({ email, password: hashedPassword });
+		await newUser.save();
+		console.log("user created");
+	} catch (error) {
+		console.log("error creating adding new user", error);
+		return { message: "Error adding new user" };
+	}
+	revalidatePath("/admin");
+	redirect("/admin");
+}
+
 export async function createCat(prevState, formData) {
-	const validatedFields = FormSchema.safeParse({
+	const validatedFields = CatFormSchema.safeParse({
 		name: formData.get("name"),
 		age: formData.get("age"),
 		description: formData.get("description"),
@@ -44,7 +137,7 @@ export async function createCat(prevState, formData) {
 	if (!validatedFields.success) {
 		return {
 			errors: validatedFields.error.flatten().fieldErrors,
-			message: "Missing fields. Failed to create cat.",
+			message: "Missing fields. Failed to create user.",
 		};
 	}
 
@@ -63,7 +156,7 @@ export async function createCat(prevState, formData) {
 
 // id needs to be bound
 export async function updateCat(id, formData) {
-	const { name, age, description, category, img } = FormSchema.parse({
+	const { name, age, description, category, img } = CatFormSchema.parse({
 		name: formData.get("name"),
 		age: formData.get("age"),
 		description: formData.get("description"),
